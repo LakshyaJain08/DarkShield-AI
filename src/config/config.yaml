@@ -1,0 +1,56 @@
+# Configuration for End-to-End Dark Pattern Detection Pipeline
+
+data_ingestion:
+  raw_data_path: "data/raw/dataset.tsv"
+  train_data_path: "data/processed/train.csv"
+  test_data_path: "data/processed/test.csv"
+  test_size: 0.2
+  random_state: 42
+
+data_transformation:
+  max_features: 1000
+  ngram_range: [1, 2]
+  sublinear_tf: true
+  stop_words: "english"
+  preprocessor_path: "models/vectorizer.pkl"
+
+model_trainer:
+  models_dir: "models"
+  backend_models_dir: "backend/models"
+  random_state: 42
+  
+  logistic_regression:
+    param_grid:
+      C: [0.01, 0.1, 1.0, 5.0, 10.0]
+      penalty: ["l2"]
+      solver: ["lbfgs", "liblinear"]
+      max_iter: [1000]
+
+  svm:
+    param_grid:
+      C: [0.1, 1.0, 5.0, 10.0]
+      kernel: ["linear", "rbf"]
+      probability: [true]
+
+  lstm:
+    search_space:
+      hidden_dims: [32, 64, 128]
+      learning_rates: [0.001, 0.0005]
+      batch_sizes: [32, 64]
+      epochs: 15
+
+  gru:
+    search_space:
+      hidden_dims: [32, 64, 128]
+      learning_rates: [0.001, 0.0005]
+      batch_sizes: [32, 64]
+      epochs: 15
+
+model_evaluation:
+  metrics_output_path: "outputs/metrics.json"
+  confusion_matrix_path: "outputs/confusion_matrices.png"
+  roc_curve_path: "outputs/roc_curves.png"
+
+model_pusher:
+  models_dir: "models"
+  production_dir: "backend/models"

@@ -1,0 +1,3 @@
+[submodule "ec-darkpattern"]
+	path = ec-darkpattern
+	url = https://github.com/yamanalab/ec-darkpattern.git

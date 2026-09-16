@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>DarkShield AI Inspector</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="extension-container">
+    <div class="header">
+      <div class="brand">
+        <div class="shield-badge"><img src="icons/icon48.png" width="18" height="18" alt="Logo" style="border-radius: 3px; display: block;" /></div>
+        <div>
+          <h2>DarkShield AI</h2>
+          <span class="sub-badge">Pattern Inspector</span>
+        </div>
+      </div>
+      <span class="live-dot" title="Backend Online"></span>
+    </div>
+
+    <div class="form-group">
+      <label for="modelSelect">Detection Engine:</label>
+      <select id="modelSelect">
+        <option value="svm" selected>Support Vector Machine (Margin)</option>
+        <option value="logistic_regression">Logistic Regression (Linear)</option>
+        <option value="lstm">LSTM Network (Sequence)</option>
+        <option value="gru">GRU Network (Contextual)</option>
+      </select>
+    </div>
+
+    <button id="analyzeBtn" class="primary-btn">
+      <span class="btn-text">Audit Current Web Page</span>
+    </button>
+
+    <div id="loader" class="hidden">
+      <div class="spinner"></div>
+      <p>Extracting DOM & Running ML...</p>
+    </div>
+
+    <div id="result" class="hidden">
+      <div id="statusBadge" class="status-badge"></div>
+      
+      <div class="metric-row">
+        <span class="metric-label">Confidence:</span>
+        <span id="confidenceVal" class="metric-value">--</span>
+      </div>
+
+      <div class="section-label">Manipulative Indicators (SHAP):</div>
+      <div id="shapWords" class="shap-container"></div>
+
+      <div class="section-label" style="margin-top: 10px;">Scanned Text Sample:</div>
+      <div id="extractedText" class="extracted-text-box"></div>
+    </div>
+    
+    <div id="error" class="hidden error-banner"></div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
