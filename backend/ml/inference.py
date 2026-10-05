@@ -11,8 +11,8 @@ try:
     from src.pipelines.prediction_pipeline import PredictionPipeline
     pipeline = PredictionPipeline()
     
-    def predict_and_explain(text, model_name='logistic_regression'):
-        return pipeline.predict_with_explanation(text, model_name)
+    def predict_and_explain(text, model_name='logistic_regression', elements=None):
+        return pipeline.predict_with_explanation(text, model_name, elements=elements)
 except Exception as e:
     # Graceful fallback to standalone logic if src is unavailable
     import pickle

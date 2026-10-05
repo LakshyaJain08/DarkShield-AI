@@ -182,6 +182,7 @@ function App() {
   const activeResult = resultsData?.models?.[selectedModel] || resultsData?.primaryResult
   const isDark = activeResult?.is_dark_pattern
   const confidence = activeResult?.confidence || 0
+  const flaggedElements = activeResult?.flagged_elements || []
 
   const modelKeys = resultsData?.models ? Object.keys(resultsData.models) : []
   const darkCount = modelKeys.filter(k => resultsData.models[k].is_dark_pattern).length
@@ -346,6 +347,13 @@ function App() {
               Model Comparison Matrix
             </button>
             <button
+              className={`tab-btn ${activeTab === 'elements' ? 'active' : ''}`}
+              onClick={() => setActiveTab('elements')}
+            >
+              <AlertTriangle size={16} />
+              Detected Cues {flaggedElements.length > 0 && <span style={{ background: 'var(--danger-bg)', color: '#fca5a5', padding: '0.1rem 0.45rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 700 }}>{flaggedElements.length}</span>}
+            </button>
+            <button
               className={`tab-btn ${activeTab === 'shap' ? 'active' : ''}`}
               onClick={() => setActiveTab('shap')}
             >
@@ -367,6 +375,71 @@ function App() {
               Deceptive Taxonomy Reference
             </button>
           </div>
+
+          {/* Tab 0: Element-Level Detected Cues */}
+          {activeTab === 'elements' && (
+            <div className="glass-panel shap-panel">
+              <div className="shap-header">
+                <h3 className="shap-title">Element-Level Deceptive Pattern Inspector</h3>
+                <p className="shap-subtitle">
+                  Granular audit isolating discrete buttons, banners, and timers to prevent whole-page false alarms.
+                </p>
+              </div>
+
+              {flaggedElements.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                  {flaggedElements.map((el, idx) => (
+                    <div
+                      key={idx}
+                      className="glass-panel"
+                      style={{
+                        padding: '1rem 1.25rem',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: '1rem',
+                        background: 'var(--bg-secondary)',
+                        borderLeft: '4px solid var(--danger-primary)'
+                      }}
+                    >
+                      <div>
+                        <span
+                          style={{
+                            fontSize: '0.685rem',
+                            fontWeight: 700,
+                            color: '#fca5a5',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.04em'
+                          }}
+                        >
+                          {el.category}
+                        </span>
+                        <p style={{ marginTop: '0.35rem', fontSize: '0.925rem', color: '#f8fafc', fontWeight: 500, lineHeight: 1.4 }}>
+                          "{el.text}"
+                        </p>
+                      </div>
+                      <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Confidence</div>
+                        <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#fca5a5', fontFamily: 'var(--font-mono)' }}>
+                          {(el.confidence * 100).toFixed(1)}%
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ padding: '2.5rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                  <ShieldCheck size={40} color="var(--success-primary)" style={{ margin: '0 auto 0.75rem auto' }} />
+                  <div style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                    Zero Deceptive Elements Flagged
+                  </div>
+                  <p style={{ fontSize: '0.85rem', marginTop: '0.35rem', color: 'var(--text-muted)' }}>
+                    All scanned buttons, badges, banners, and content blocks on this page comply with standard non-deceptive UX standards.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Tab 1: Multi-Model Comparison Matrix */}
           {activeTab === 'overview' && (

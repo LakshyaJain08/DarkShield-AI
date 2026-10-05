@@ -39,6 +39,35 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-card) var(--bg-secondary);
+}
+
+/* Global Custom Scrollbars matching Sentinel Amber Dark Theme */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-card);
+  border-radius: 9999px;
+  border: 1px solid var(--border-subtle);
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-primary);
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.45);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 body {
@@ -424,9 +453,34 @@ body {
   display: flex;
   gap: 0.4rem;
   border-bottom: 1px solid var(--border-subtle);
-  padding-bottom: 0.4rem;
-  margin-bottom: 0.25rem;
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.35rem;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(245, 158, 11, 0.4) var(--bg-card);
+}
+
+.workspace-tabs::-webkit-scrollbar {
+  height: 5px;
+}
+
+.workspace-tabs::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: 9999px;
+  margin: 0 2px;
+}
+
+.workspace-tabs::-webkit-scrollbar-thumb {
+  background: rgba(245, 158, 11, 0.35);
+  border-radius: 9999px;
+  border: 1px solid rgba(245, 158, 11, 0.15);
+  transition: all 0.2s ease;
+}
+
+.workspace-tabs::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-primary);
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.6);
 }
 
 .tab-btn {
@@ -443,6 +497,7 @@ body {
   gap: 0.45rem;
   transition: all 0.15s ease;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .tab-btn:hover {
@@ -638,6 +693,26 @@ body {
   overflow-y: auto;
   white-space: pre-wrap;
   word-break: break-word;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-card) var(--bg-input);
+}
+
+.inspector-box::-webkit-scrollbar {
+  width: 6px;
+}
+
+.inspector-box::-webkit-scrollbar-track {
+  background: var(--bg-input);
+  border-radius: 9999px;
+}
+
+.inspector-box::-webkit-scrollbar-thumb {
+  background: var(--border-card);
+  border-radius: 9999px;
+}
+
+.inspector-box::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-primary);
 }
 
 .copy-btn {

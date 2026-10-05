@@ -24,13 +24,13 @@ class URLRequest(BaseModel):
 @app.post("/analyze/url")
 def analyze_url(request: URLRequest):
     try:
-        # 1. Scrape text directly from web page via Playwright DOM extraction
-        text, screenshot_bytes = scrape_page(request.url)
+        # 1. Scrape text and candidate UI snippets directly from web page via Playwright DOM extraction
+        text, snippets, screenshot_bytes = scrape_page(request.url)
         if not text or not text.strip():
             return {"status": "error", "message": "No text found on the page."}
         
-        # 2. Predict and Explain
-        result = predict_and_explain(text, request.model)
+        # 2. Predict and Explain with calibrated element-level detection
+        result = predict_and_explain(text, request.model, elements=snippets)
         return {"status": "success", "data": result}
         
     except Exception as e:
@@ -39,15 +39,15 @@ def analyze_url(request: URLRequest):
 @app.post("/analyze/all")
 def analyze_all(request: URLRequest):
     try:
-        # Scrape text once
-        text, screenshot_bytes = scrape_page(request.url)
+        # Scrape text and candidate UI snippets once
+        text, snippets, screenshot_bytes = scrape_page(request.url)
         if not text or not text.strip():
             return {"status": "error", "message": "No text found on the page."}
         
         models = ['logistic_regression', 'svm', 'lstm', 'gru']
         results = {}
         for m in models:
-            results[m] = predict_and_explain(text, m)
+            results[m] = predict_and_explain(text, m, elements=snippets)
             
         return {"status": "success", "text": text, "models": results}
     except Exception as e:
