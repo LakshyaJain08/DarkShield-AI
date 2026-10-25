@@ -2,8 +2,6 @@ import os
 import torch
 import numpy as np
 import pandas as pd
-import matplotlib
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import (
@@ -164,7 +162,7 @@ class ModelEvaluation:
             auc_val = roc_auc_score(y_test, probs)
             plt.plot(fpr, tpr, label=f"{name.upper()} (AUC = {auc_val:.4f})", color=colors.get(name, "#ffffff"), lw=2.2)
             
-        plt.plot([0, 1], [0, 1], "k--", color="#71717a", lw=1.5, label="Random Guess (AUC = 0.50)")
+        plt.plot([0, 1], [0, 1], "--", color="#71717a", lw=1.5, label="Random Guess (AUC = 0.50)")
         plt.xlim([0.0, 1.0])
         plt.ylim([0.0, 1.05])
         plt.xlabel("False Positive Rate (1 - Specificity)", color="#a1a1aa", fontsize=12)

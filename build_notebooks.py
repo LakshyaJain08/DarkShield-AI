@@ -70,7 +70,8 @@ This notebook provides an in-depth exploratory analysis of the `ec-darkpattern` 
 7. **N-Gram Salience & Frequency Profiling** (unigrams, bigrams, trigrams, odds ratios)
 8. **Feature Correlation Matrix** (correlating engineered syntactic cues with the dark pattern label)
 """),
-        code("""import sys
+        code("""%matplotlib inline
+import sys
 import os
 from pathlib import Path
 import re
@@ -603,7 +604,8 @@ We perform:
 5. **Deep Learning Sequence Modeling** (PyTorch LSTM and GRU training with loss convergence tracking)
 6. **Final Model Leaderboard & Decision Matrix**
 """),
-        code("""import sys
+        code("""%matplotlib inline
+import sys
 import os
 from pathlib import Path
 
@@ -864,7 +866,8 @@ This master notebook orchestrates the complete production lifecycle of the **Dar
 9. **Stage 9: Automated Model Pusher & Registry** (Deploying vetted models directly to `backend/models/`)
 10. **Stage 10: Executive Summary & System Verification**
 """),
-        code("""# 1. Environment Initialization & Component Imports
+        code("""%matplotlib inline
+# 1. Environment Initialization & Component Imports
 import sys
 import os
 from pathlib import Path
