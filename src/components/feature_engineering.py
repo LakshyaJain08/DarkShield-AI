@@ -1,10 +1,125 @@
+import re
+import numpy as np
+import pandas as pd
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
-import numpy as np
+from sklearn.base import BaseEstimator, TransformerMixin
 from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
+
+# Domain-specific lexicons compiled with word boundaries
+URGENCY_REGEX = re.compile(
+    r'\b(hurry|limited|expires|countdown|deal|fast|quick|ending|ends|last chance|now|clock|today only|flash sale)\b',
+    re.IGNORECASE
+)
+SCARCITY_REGEX = re.compile(
+    r'\b(only|left|stock|sold|remaining|demand|popular|few|almost gone|low stock|reserved)\b',
+    re.IGNORECASE
+)
+SOCIAL_REGEX = re.compile(
+    r'\b(bought|people|viewing|looking|others|trending|purchased|views|claimed|booked)\b',
+    re.IGNORECASE
+)
+GUILT_REGEX = re.compile(
+    r'\b(miss|hate|lose|regret|no thanks|skip|don\'t want|decline)\b',
+    re.IGNORECASE
+)
+
+class LinguisticFeatureExtractor(BaseEstimator, TransformerMixin):
+    """
+    Scikit-learn compatible transformer extracting 15 domain-specific linguistic,
+    syntactic, structural, and psychological dark pattern cue features.
+    """
+    
+    FEATURE_NAMES = [
+        "char_count",
+        "word_count",
+        "avg_word_length",
+        "exclamation_count",
+        "question_count",
+        "uppercase_words",
+        "uppercase_ratio",
+        "digit_count",
+        "has_number",
+        "has_currency",
+        "urgency_hits",
+        "scarcity_hits",
+        "social_hits",
+        "guilt_hits",
+        "total_cues"
+    ]
+
+    def __init__(self):
+        pass
+
+    def fit(self, X, y=None):
+        return self
+
+    def _extract_single(self, text: str) -> list[float]:
+        text_str = str(text) if text is not None else ""
+        stripped = text_str.strip()
+        words = stripped.split()
+        
+        char_count = float(len(stripped))
+        word_count = float(len(words))
+        avg_word_length = char_count / (word_count + 1e-5)
+        
+        exclamation_count = float(text_str.count("!"))
+        question_count = float(text_str.count("?"))
+        
+        uppercase_words = float(sum(1 for w in words if w.isupper() and len(w) > 1))
+        uppercase_ratio = uppercase_words / (word_count + 1e-5)
+        
+        digit_count = float(sum(c.isdigit() for c in text_str))
+        has_number = 1.0 if digit_count > 0 else 0.0
+        has_currency = 1.0 if bool(re.search(r'[$€£₹]', text_str)) else 0.0
+        
+        urgency_hits = float(len(URGENCY_REGEX.findall(text_str)))
+        scarcity_hits = float(len(SCARCITY_REGEX.findall(text_str)))
+        social_hits = float(len(SOCIAL_REGEX.findall(text_str)))
+        guilt_hits = float(len(GUILT_REGEX.findall(text_str)))
+        total_cues = urgency_hits + scarcity_hits + social_hits + guilt_hits
+        
+        return [
+            char_count,
+            word_count,
+            avg_word_length,
+            exclamation_count,
+            question_count,
+            uppercase_words,
+            uppercase_ratio,
+            digit_count,
+            has_number,
+            has_currency,
+            urgency_hits,
+            scarcity_hits,
+            social_hits,
+            guilt_hits,
+            total_cues
+        ]
+
+    def transform(self, X) -> np.ndarray:
+        if isinstance(X, pd.DataFrame):
+            col = "text" if "text" in X.columns else X.columns[0]
+            texts = X[col].tolist()
+        elif isinstance(X, pd.Series):
+            texts = X.tolist()
+        else:
+            texts = list(X)
+            
+        features = [self._extract_single(t) for t in texts]
+        return np.array(features, dtype=np.float32)
+
+    def get_feature_names_out(self, input_features=None) -> list[str]:
+        return list(self.FEATURE_NAMES)
+
+    def transform_to_df(self, X) -> pd.DataFrame:
+        """Helper to return features directly as a labeled pandas DataFrame."""
+        arr = self.transform(X)
+        return pd.DataFrame(arr, columns=self.FEATURE_NAMES)
+
 
 class DeepSequenceModel(nn.Module):
     """Deep sequence neural network architecture supporting LSTM and GRU."""
@@ -42,6 +157,7 @@ class DeepSequenceModel(nn.Module):
         out = self.fc2(out)
         return self.sigmoid(out)
 
+
 class TextSequenceDataset(Dataset):
     """PyTorch Dataset wrapper for vector representations and binary target labels."""
     
@@ -55,11 +171,12 @@ class TextSequenceDataset(Dataset):
     def __getitem__(self, idx: int) -> tuple[torch.Tensor, torch.Tensor]:
         return self.X[idx], self.y[idx]
 
+
 class FeatureEngineering:
     """Component to prepare feature representations and PyTorch DataLoaders."""
     
     def __init__(self):
-        pass
+        self.linguistic_extractor = LinguisticFeatureExtractor()
 
     @staticmethod
     def get_dataloaders(
