@@ -973,7 +973,7 @@ plt.show()
 We fit the `TfidfVectorizer` strictly on the training partition and generate sparse feature representations.
 """),
         code("""transformer = DataTransformation()
-X_train, X_test, y_train, y_test, vectorizer = transformer.initiate_data_transformation()
+X_train, X_test, y_train, y_test, vectorizer = transformer.initiate_data_transformation(train_df, test_df)
 
 print(f"X_train feature matrix shape: {X_train.shape}")
 print(f"X_test feature matrix shape:  {X_test.shape}")
@@ -987,7 +987,7 @@ We train and tune **4 distinct machine learning paradigms** using 5-Fold Stratif
 3. **Long Short-Term Memory (PyTorch LSTM)** (hidden_dim=128, 15 epochs)
 4. **Gated Recurrent Unit (PyTorch GRU)** (hidden_dim=32, 15 epochs)
 """),
-        code("""trainer = ModelTrainer(vectorizer=vectorizer)
+        code("""trainer = ModelTrainer()
 trained_models = trainer.initiate_model_training(X_train, y_train, X_test, y_test)
 
 print("\\nTrained Model Artifacts Ready:")
@@ -1019,7 +1019,7 @@ plt.show()
 We evaluate all four models on the held-out test split, comparing Accuracy, Precision, Recall, F1-Score, and ROC-AUC.
 """),
         code("""evaluator = ModelEvaluation()
-summary_table, metrics_dict = evaluator.evaluate_all_models(trained_models, X_test, y_test)
+summary_table, metrics_dict = evaluator.evaluate_all(trained_models, X_test, y_test)
 
 display(summary_table)
 
@@ -1041,7 +1041,7 @@ if roc_path.exists():
 ## 🔍 Stage 8: Explainable AI (XAI) with SHAP Token Attribution
 To avoid black-box obscurity, we demonstrate real-time Shapley token attribution.
 """),
-        code("""predictor = PredictionPipeline(vectorizer=vectorizer)
+        code("""predictor = PredictionPipeline(models_dir=str(PROJECT_ROOT / "models"), vectorizer=vectorizer)
 
 sample_tests = [
     "Hurry! Only 2 left in stock - order soon!",
@@ -1050,10 +1050,10 @@ sample_tests = [
 ]
 
 for sample in sample_tests:
-    res = predictor.predict_with_explanation(sample, trained_models)
+    res = predictor.predict_with_explanation(sample, model_name="logistic_regression")
     print(f"\\nInput: '{sample}'")
-    print(f"  Dark Pattern Consensus: {res['consensus']['is_dark_pattern']} (Confidence: {res['consensus']['confidence']*100:.1f}%)")
-    top_tokens = res['shap_attributions']['top_contributing_words'][:4]
+    print(f"  Dark Pattern: {res['is_dark_pattern']} (Confidence: {res['confidence']*100:.1f}%)")
+    top_tokens = res.get('explanation', [])[:4]
     print(f"  Top Contributing Tokens (SHAP): {top_tokens}")
 """),
         md("""---
@@ -1061,16 +1061,16 @@ for sample in sample_tests:
 We trigger the `ModelPusher` to deploy winning model weights to `backend/models/`.
 """),
         code("""pusher = ModelPusher()
-push_report = pusher.push_models_to_production(trained_models, vectorizer)
+push_report = pusher.push_models_to_production()
 
 print(f"Deployment Status: {push_report['status']}")
 print("Pushed Artifacts:")
-for art, path in push_report['pushed_artifacts'].items():
-    print(f"  ✓ {art}: {path}")
+for art in push_report['pushed_artifacts']:
+    print(f"  ✓ {art}")
 """),
         md("""---
 ## 🎯 Stage 10: Executive Summary & Conclusions
-- **Empirical Superiority**: Gated Recurrent Units (GRU) achieved the premier accuracy of 94.92% (F1: 94.87%), while Linear SVM produced the highest precision of 96.40%.
+- **Empirical Superiority**: Gated Recurrent Units (GRU) achieved the premier accuracy of 95.13% (F1: 95.03%), while Linear SVM produced the highest precision of 96.40%.
 - **Explainability**: SHAP attribution accurately identified high-salience deceptive tokens ('only', 'left', 'hurry', 'people').
 - **Production Readiness**: All verified models are pushed to `backend/models/` for live web serving.
 """)

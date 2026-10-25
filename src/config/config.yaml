@@ -21,30 +21,30 @@ model_trainer:
   
   logistic_regression:
     param_grid:
-      C: [0.01, 0.1, 1.0, 5.0, 10.0]
+      C: [0.1, 1.0, 10.0]
       penalty: ["l2"]
-      solver: ["lbfgs", "liblinear"]
+      solver: ["lbfgs"]
       max_iter: [1000]
 
   svm:
     param_grid:
-      C: [0.1, 1.0, 5.0, 10.0]
-      kernel: ["linear", "rbf"]
+      C: [0.5, 1.0, 5.0]
+      kernel: ["linear"]
       probability: [true]
 
   lstm:
     search_space:
-      hidden_dims: [32, 64, 128]
-      learning_rates: [0.001, 0.0005]
-      batch_sizes: [32, 64]
-      epochs: 15
+      hidden_dims: [64, 128]
+      learning_rates: [0.001]
+      batch_sizes: [32]
+      epochs: 8
 
   gru:
     search_space:
-      hidden_dims: [32, 64, 128]
-      learning_rates: [0.001, 0.0005]
-      batch_sizes: [32, 64]
-      epochs: 15
+      hidden_dims: [32, 64]
+      learning_rates: [0.001]
+      batch_sizes: [32]
+      epochs: 8
 
 model_evaluation:
   metrics_output_path: "outputs/metrics.json"
