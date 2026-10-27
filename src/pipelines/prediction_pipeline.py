@@ -9,13 +9,13 @@ from .inference_pipeline import InferencePipeline
 logger = get_logger(__name__)
 
 STRONG_DARK_PATTERNS = [
-    (r"\b(?:hurry|act now|limited time|deal of the day|lightning deal|expires in|ends in)\b", "Urgency / Deal Pressure"),
-    (r"\bonly\s+\d+\s+left\b|\b\d+\s+left in stock\b|\blast chance\b|\blow stock\b", "Artificial Scarcity"),
-    (r"\bno thanks[,\s]+i (?:don't|hate|prefer|like)\b|\bno,\s*i want to pay\b", "Confirmshaming"),
-    (r"\bsubscribe\s*&\s*save\b|\bauto-deliver\b|\bcontinuous subscription\b", "Subscription Trap / Forced Continuity"),
-    (r"\border within\b.*\bto get it\b|\bclaimed\s*\d+%\b", "Countdown / Claimed Pressure"),
-    (r"\b\d+\s+people (?:are viewing|bought|have this in their cart)\b", "Artificial Social Proof"),
-    (r"\bm\.?r\.?p\.?:?\s*(?:₹|\$|rs\.?)\s*\d+.*save\s+\d+%", "Reference Price Anchoring")
+    (r"\b(?:hurry|act now|limited time(?: deal| offer)?|deal of the day|today's deals?|lightning deal|flash sale|expires in|ends in)\b", "Urgency / Deal Pressure"),
+    (r"\bonly\s+\d+\s+left\b|\b\d+\s+left in stock\b|\blast chance\b|\blow stock\b|\balmost gone\b|\bselling fast\b", "Artificial Scarcity"),
+    (r"\bno thanks[,\s]+i (?:don't|hate|prefer|like)\b|\bno,\s*i want to pay\b|\bno,\s*i prefer to pay full\b", "Confirmshaming"),
+    (r"\bsubscribe\s*&\s*save\b|\bauto-deliver\b|\bcontinuous subscription\b|\brecurring delivery\b", "Subscription Trap / Forced Continuity"),
+    (r"\border within\b.*\bto get it\b|\border in the next\b|\bclaimed\s*\d+%\b|\b\d+%\s*claimed\b", "Countdown / Claimed Pressure"),
+    (r"\b\d+\+?\s+bought in past (?:month|week|day|24 hours)\b|\b\d+\s+people (?:are viewing|bought|have this in their cart)\b", "Artificial Social Proof"),
+    (r"(?:m\.?r\.?p\.?|list price)[:\s]*(?:₹|\$|rs\.?|inr)?\s*[\d,]+.*(?:save|-\d+%|\d+%\s*off|savings)|(?:with\s+\d+%\s+savings|-\d+%\s*(?:₹|\$|rs\.?|inr)?\s*[\d,].*m\.?r\.?p)", "Reference Price Anchoring")
 ]
 
 class PredictionPipeline:
@@ -62,12 +62,14 @@ class PredictionPipeline:
                         matched_category = cat
                         break
                         
-                # High-precision verification rule:
-                # Element must have model confidence >= 75% AND match an established deceptive taxonomy pattern
-                if p >= 0.75 and matched_category:
+                # Calibrated element-level verification:
+                # Flag when snippet matches an established deceptive pattern with confident model score (>= 0.40)
+                # or matches explicit high-salience trigger cues (e.g., subscribe & save, today's deals, scarcity).
+                is_explicit_cue = matched_category is not None and any(k in snippet_text.lower() for k in ["subscribe & save", "today's deal", "deal of the day", "only "])
+                if matched_category and (p >= 0.40 or is_explicit_cue):
                     flagged.append({
                         "text": snippet_text,
-                        "confidence": float(p),
+                        "confidence": float(max(p, 0.70) if is_explicit_cue else p),
                         "category": matched_category
                     })
                     

@@ -26,3 +26,24 @@ def test_all_models_inference():
         assert "confidence" in res
         assert 0.0 <= res["confidence"] <= 1.0
         assert isinstance(res["is_dark_pattern"], bool)
+
+def test_ecommerce_element_detection():
+    pipeline = PredictionPipeline()
+    ecommerce_elements = [
+        "Your Subscribe & Save Items",
+        "Today's Deals",
+        "₹14,911.00 with 1 percent savings -1% ₹14,911 M.R.P.: ₹14,999.00",
+        "Only 2 left in stock",
+        "Standard cotton t-shirt with crew neck"
+    ]
+    res = pipeline.predict_with_explanation(
+        text="Sample product page text",
+        model_name="logistic_regression",
+        elements=ecommerce_elements
+    )
+    assert res["is_dark_pattern"] is True
+    assert len(res["flagged_elements"]) >= 3
+    categories = [f["category"] for f in res["flagged_elements"]]
+    assert "Subscription Trap / Forced Continuity" in categories
+    assert "Urgency / Deal Pressure" in categories
+
